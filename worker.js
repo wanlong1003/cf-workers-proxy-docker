@@ -2,8 +2,8 @@
 let hub_host = 'registry-1.docker.io'
 // Docker认证服务器地址
 const auth_url = 'https://auth.docker.io'
-// 自定义的工作服务器地址 修改为自己的域名，比如 https://docker.wheny.com
-let workers_url = 'https://docker.wheny.com'
+// 自定义的工作服务器地址 修改为自己的域名，比如 https://docker.xxxxxx.com
+let workers_url = 'https://docker.xxxxxx.com'
 
 // 根据主机名选择对应的上游地址
 function routeByHosts(host) {
