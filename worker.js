@@ -7,7 +7,7 @@ let workers_url = 'https://docker.wheny.com'
 
 // 根据主机名选择对应的上游地址
 function routeByHosts(host) {
-        // 定义路由表
+    // 定义路由表
     const routes = {
         // 生产环境
         "quay": "quay.io",
@@ -16,16 +16,16 @@ function routeByHosts(host) {
         "k8s": "registry.k8s.io",
         "ghcr": "ghcr.io",
         "cloudsmith": "docker.cloudsmith.io",
-        
+
         // 测试环境
         "test": "registry-1.docker.io",
     };
 
-    if (host in routes){
-      return [ routes[host], false ];
+    if (host in routes) {
+        return [routes[host], false];
     }
-    else { 
-      return [ hub_host, true ];
+    else {
+        return [hub_host, true];
     }
 }
 
@@ -65,7 +65,7 @@ function newUrl(urlStr) {
 function isUUID(uuid) {
     // 定义一个正则表达式来匹配 UUID 格式
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    
+
     // 使用正则表达式测试 UUID 字符串
     return uuidRegex.test(uuid);
 }
@@ -98,7 +98,7 @@ async function nginx() {
     </body>
     </html>
     `
-    return text ;
+    return text;
 }
 
 export default {
@@ -108,14 +108,14 @@ export default {
         let url = new URL(request.url); // 解析请求URL
         workers_url = `https://${url.hostname}`;
         const pathname = url.pathname;
-        const hostname = url.searchParams.get('hubhost') || url.hostname; 
+        const hostname = url.searchParams.get('hubhost') || url.hostname;
         const hostTop = hostname.split('.')[0];// 获取主机名的第一部分
         const checkHost = routeByHosts(hostTop);
         hub_host = checkHost[0]; // 获取上游地址
         const fakePage = checkHost[1];
         console.log(`域名头部: ${hostTop}\n反代地址: ${hub_host}\n伪装首页: ${fakePage}`);
         const isUuid = isUUID(pathname.split('/')[1].split('/')[0]);
-        
+
         const conditions = [
             isUuid,
             pathname.includes('/_'),
@@ -133,10 +133,10 @@ export default {
         ];
 
         if (conditions.some(condition => condition) && (fakePage === true || hostTop == 'docker')) {
-            if (env.URL302){
+            if (env.URL302) {
                 return Response.redirect(env.URL302, 302);
-            } else if (env.URL){
-                if (env.URL.toLowerCase() == 'nginx'){
+            } else if (env.URL) {
+                if (env.URL.toLowerCase() == 'nginx') {
                     //首页改成一个nginx伪装页
                     return new Response(await nginx(), {
                         headers: {
@@ -145,7 +145,7 @@ export default {
                     });
                 } else return fetch(new Request(env.URL, request));
             }
-            
+
             const newUrl = new URL("https://registry.hub.docker.com" + pathname + url.search);
 
             // 复制原始请求的标头
@@ -155,10 +155,10 @@ export default {
             headers.set('Host', 'registry.hub.docker.com');
 
             const newRequest = new Request(newUrl, {
-                    method: request.method,
-                    headers: headers,
-                    body: request.method !== 'GET' && request.method !== 'HEAD' ? await request.blob() : null,
-                    redirect: 'follow'
+                method: request.method,
+                headers: headers,
+                body: request.method !== 'GET' && request.method !== 'HEAD' ? await request.blob() : null,
+                redirect: 'follow'
             });
 
             return fetch(newRequest);
